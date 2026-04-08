@@ -1,36 +1,178 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Peto Tecno — Sistema POS & ERP
 
-## Getting Started
+> Sistema de Punto de Venta, Inventario y Apartados (`Petoahorro`) diseñado para tiendas de tecnología en El Salvador.
+> Construido con Next.js 16, Prisma 7, PostgreSQL y Tailwind CSS 4.
 
-First, run the development server:
+---
+
+## 📋 Tecnologías
+
+| Capa | Tecnología | Versión |
+|---|---|---|
+| Framework principal | Next.js (App Router) | 16.2.2 |
+| Lenguaje | TypeScript | ^5 |
+| ORM | Prisma + Adapter PG | ^7.7.0 |
+| Base de datos | PostgreSQL | ≥14 |
+| Estilos | Tailwind CSS | ^4 |
+| Íconos | Lucide React | ^1.7.0 |
+| Gráficos | Recharts | ^3.8.1 |
+| Autenticación | JWT via `jose` | ^6.2.2 |
+| Hashing contraseñas | `bcrypt` | ^6.0.0 |
+| Escaneo QR/Barcode | `html5-qrcode` | ^2.3.8 |
+
+---
+
+## ⚙️ Instalación desde cero
+
+### Prerrequisitos
+
+- **Node.js** ≥ 20
+- **PostgreSQL** ≥ 14 corriendo localmente (o en la red)
+- **Git**
+
+### 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/AdonayFlores/PetoTecnoWebApp.git
+cd PetoTecnoWebApp
+```
+
+### 2. Instalar dependencias
+
+```bash
+npm install
+```
+
+### 3. Configurar variables de entorno
+
+Crea el archivo `.env` en la raíz del proyecto (nunca lo subas a Git):
+
+```env
+# Cadena de conexión a PostgreSQL
+DATABASE_URL="postgresql://TU_USUARIO:TU_CONTRASEÑA@localhost:5432/petotecno?schema=public"
+
+# Clave secreta para firmar los JWT — usa una cadena aleatoria larga
+JWT_SECRET="reemplaza-esto-con-una-clave-muy-larga-y-aleatoria"
+```
+
+> ⚠️ **Importante:** Si `JWT_SECRET` no está definido, la aplicación lanzará un error al arrancar. Nunca uses claves predecibles en producción.
+
+### 4. Crear la base de datos
+
+Conéctate a PostgreSQL y crea la base de datos (si no existe):
+
+```sql
+CREATE DATABASE petotecno;
+```
+
+### 5. Sincronizar el esquema de Prisma
+
+```bash
+# Aplica el schema.prisma a la base de datos (crea tablas e índices)
+npx prisma db push
+```
+
+### 6. Poblar datos iniciales (Seed)
+
+```bash
+# Carga usuarios de prueba (Admin: admin@petotecno.com / Cajero: cajero@petotecno.com)
+# Las contraseñas están en la ruta GET /api/seed
+curl http://localhost:3000/api/seed
+```
+
+> O visita `http://localhost:3000/api/seed` desde el navegador tras iniciar el servidor.
+
+### 7. Iniciar el servidor de desarrollo
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+La aplicación estará disponible en `https://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> **Nota:** el script `dev` usa `--experimental-https`, por lo que el navegador puede mostrar una advertencia de seguridad en desarrollo. Acéptala para continuar.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📁 Estructura de carpetas
 
-To learn more about Next.js, take a look at the following resources:
+```
+PetoTecnoAppWeb/
+│
+├── prisma/
+│   └── schema.prisma          # Modelos de BD: User, Product, Sale, Petoahorro, TurnoCaja
+│
+├── src/
+│   ├── app/
+│   │   ├── page.tsx           # 🏠 Dashboard principal
+│   │   ├── layout.tsx         # Layout raíz con Sidebar
+│   │   ├── login/             # Página de autenticación
+│   │   ├── pos/               # 🛒 Módulo Punto de Venta
+│   │   ├── inventario/        # 📦 Gestión de inventario
+│   │   ├── petoahorro/        # 💰 Módulo de apartados
+│   │   ├── caja/              # 🏦 Corte de caja y arqueo
+│   │   ├── transacciones/     # 📊 Historial de ventas
+│   │   └── api/               # API Routes (backend)
+│   │       ├── auth/          # login, logout, me
+│   │       ├── products/      # CRUD de productos
+│   │       ├── sales/         # Crear y consultar ventas
+│   │       ├── petoahorro/    # CRUD de cuentas y abonos
+│   │       └── caja/          # Apertura, cierre, historial
+│   │
+│   ├── components/
+│   │   └── layout/
+│   │       └── Sidebar.tsx    # Navegación principal + Bottom Nav móvil
+│   │
+│   └── lib/
+│       ├── auth.ts            # signJwt / verifyJwt
+│       ├── api-auth.ts        # requireAuth() — protección de API Routes
+│       ├── prisma.ts          # Singleton del cliente Prisma
+│       └── timezone.ts        # Utilidades de zona horaria GMT-6 El Salvador
+│
+├── .env                       # Variables de entorno (NO subir a Git)
+├── .gitignore
+├── next.config.ts
+└── package.json
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🔑 Credenciales de prueba (Seed)
 
-## Deploy on Vercel
+| Rol | Email | Contraseña |
+|---|---|---|
+| Administrador | `admin@petotecno.com` | `admin123` |
+| Cajero | `cajero@petotecno.com` | `cajero123` |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🛠️ Comandos útiles
+
+```bash
+# Iniciar desarrollo
+npm run dev
+
+# Aplicar cambios al schema de Prisma (sin migración formal)
+npx prisma db push
+
+# Ver/editar la BD en interfaz web de Prisma
+npx prisma studio
+
+# Compilar para producción
+npm run build
+
+# Iniciar en modo producción
+npm start
+
+# Linter
+npm run lint
+```
+
+---
+
+## 🚢 Despliegue en producción
+
+1. Asegúrate de que `JWT_SECRET` esté configurado en las variables de entorno del servidor.
+2. Usa `npm run build && npm start` o despliega en **Vercel** / **Railway**.
+3. Cambia `DATABASE_URL` para apuntar a la base de datos de producción (Neon, Supabase, Railway, etc.).
+4. Ejecuta `npx prisma db push` una vez en el servidor de producción para sincronizar índices.
